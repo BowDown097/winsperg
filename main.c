@@ -15,8 +15,9 @@
 char* getProperty(Display* display, Window window, Atom propType, char* propName, unsigned long* size);
 Window* getClientList(Display* display, unsigned long* size);
 char* getWindowTitle(Display* display, Window window);
-int listWindows(Display* display);
 void randomizeGeometry(Display* display, Window window, int screenWidth, int screenHeight);
+char wmSupportsResizing(Display* display);
+int doFunny(Display* display);
 
 char verbose = 0;
 
@@ -47,7 +48,7 @@ int main(int argc, char** argv)
         }
     }
 
-    listWindows(display);
+    doFunny(display);
 }
 
 char* getProperty(Display* display, Window window, Atom propType, char* propName, unsigned long* size)
@@ -158,14 +159,41 @@ void randomizeGeometry(Display* display, Window window, int screenWidth, int scr
     }
 }
 
-int listWindows(Display* display)
+char wmSupportsResizing(Display* display)
+{
+    Atom prop = XInternAtom(display, "_NET_MOVERESIZE_WINDOW", 0);
+    Atom* list;
+    unsigned long size;
+
+    if (!(list = (Atom*)getProperty(display, DefaultRootWindow(display), XA_ATOM, "_NET_SUPPORTED", &size))) return 0;
+
+    for (int i = 0; i < size / sizeof(Atom); i++)
+    {
+        if (list[i] == prop)
+        {
+            free(list);
+            return 1;
+        }
+    }
+
+    free(list);
+    return 0;
+}
+
+int doFunny(Display* display)
 {
     Window* clientList;
     unsigned long lSize;
 
+    if (!wmSupportsResizing(display))
+    {
+        fprintf(stderr, "Your window manager is not supported by this program\n");
+        return EXIT_FAILURE;
+    }
+
     if ((clientList = getClientList(display, &lSize)) == NULL)
     {
-        fprintf(stderr, "Could not get client list");
+        fprintf(stderr, "Could not get client list\n");
         return EXIT_FAILURE;
     }
 
