@@ -48,7 +48,7 @@ int main(int argc, char** argv)
         }
     }
 
-    doFunny(display);
+    return doFunny(display);
 }
 
 char* getProperty(Display* display, Window window, Atom propType, char* propName, unsigned long* size)
