@@ -113,15 +113,13 @@ char* getWindowTitle(Display* display, Window window)
     
     if (netWmName)
     {
-        title = malloc(strlen(netWmName) + 1);
-        strcpy(title, netWmName);
+        title = strdup(netWmName);
     }
     else
     {
         if (wmName)
         {
-            title = malloc(strlen(wmName) + 1);
-            strcpy(title, wmName);
+            title = strdup(wmName);
         }
         else
         {
@@ -153,8 +151,9 @@ void randomizeGeometry(Display* display, Window window, int screenWidth, int scr
         int result = XMoveResizeWindow(display, window, randX, randY, randWidth, randHeight);
         if (verbose)
         {
-            if (result == BadValue) fprintf(stderr, "Failed to resize a window: Bad Value");
-            else if (result == BadWindow) fprintf(stderr, "Failed to resize a window: Bad Window");
+            char* windowTitle = getWindowTitle(display, window);
+            if (result == BadValue) fprintf(stderr, "Failed to resize \"%s\": Bad Value", windowTitle);
+            else if (result == BadWindow) fprintf(stderr, "Failed to resize \"%s\": Bad Window", windowTitle);
         }
     }
 }
